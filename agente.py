@@ -40,8 +40,17 @@ def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> s
         with open(caminho_resolvido, "r", encoding="utf-8") as f:
             conteudo = f.read()
 
-        if texto_antigo not in conteudo:
+        ocorrencias = conteudo.count(texto_antigo)
+
+        if ocorrencias == 0:
             return f"Erro: o texto '{texto_antigo}' não foi encontrado no arquivo '{caminho}'."
+
+        if ocorrencias > 1:
+            return (
+                f"Erro: o texto '{texto_antigo}' aparece {ocorrencias} vezes no arquivo '{caminho}'. "
+                f"Forneça um trecho mais especifico (com mais contexto ao redor) para identificar "
+                f"exatamente qual ocorrencia deve ser substituida."
+            )
 
         novo_conteudo = conteudo.replace(texto_antigo, texto_novo, 1)
 
@@ -49,6 +58,16 @@ def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> s
             f.write(novo_conteudo)
 
         return "Substituição realizada com sucesso."
+    except Exception as e:
+        return str(e)
+
+
+def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
+    try:
+        caminho_resolvido = resolver_caminho(caminho)
+        with open(caminho_resolvido, "a", encoding="utf-8") as f:
+            f.write(conteudo)
+        return "Conteúdo inserido com sucesso ao final do arquivo."
     except Exception as e:
         return str(e)
 
@@ -101,7 +120,7 @@ ferramentas = [
         'type': 'function',
         'function': {
             'name': 'substituir_no_arquivo',
-            'description': 'Substitui um trecho de texto por outro dentro de um arquivo existente. Use para edicoes pontuais, sem reescrever o arquivo inteiro.',
+            'description': 'Substitui um trecho de texto por outro dentro de um arquivo existente. Use para edicoes pontuais, sem reescrever o arquivo inteiro. O texto_antigo deve ser especifico o suficiente para aparecer apenas UMA VEZ no arquivo (inclua linhas de contexto ao redor se necessario) — se aparecer mais de uma vez, a ferramenta recusa a operacao.',
             'parameters': {
                 'type': 'object',
                 'properties': {
@@ -110,6 +129,21 @@ ferramentas = [
                     'texto_novo': {'type': 'string', 'description': 'Novo trecho de texto'}
                 },
                 'required': ['caminho', 'texto_antigo', 'texto_novo']
+            }
+        }
+    },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'inserir_no_arquivo',
+            'description': 'Adiciona conteudo novo ao FINAL de um arquivo existente, sem apagar o conteudo atual. Use quando o usuario pedir para adicionar codigo novo (ex: uma funcao nova) a um arquivo, em vez de substituir algo que ja existe.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
+                    'conteudo': {'type': 'string', 'description': 'Conteudo a ser adicionado ao final do arquivo'}
+                },
+                'required': ['caminho', 'conteudo']
             }
         }
     }
@@ -226,6 +260,11 @@ def executar_ferramenta(nome_funcao: str, args: dict) -> str:
         resultado = substituir_no_arquivo(args['caminho'], args['texto_antigo'], args['texto_novo'])
         print(f"[{args['caminho']} foi atualizado pelo agente]")
         return resultado
+    elif nome_funcao == 'inserir_no_arquivo':
+        resultado = inserir_no_arquivo(args['caminho'], args['conteudo'])
+        print(f"[{args['caminho']} foi atualizado pelo agente]")
+        atualizar_estrutura_projeto()  # pode ter criado um arquivo novo
+        return resultado
     return "Ferramenta desconhecida."
 
 
@@ -281,7 +320,7 @@ def processar_turno(mensagens: list, max_rodadas: int = 6) -> None:
                 'content': resultado,
                 'name': nome_ferramenta
             })
-            if nome_ferramenta == 'escrever_arquivo' and mensagens and mensagens[0]['role'] == 'system':
+            if nome_ferramenta in ('escrever_arquivo', 'inserir_no_arquivo') and mensagens and mensagens[0]['role'] == 'system':
                 mensagens[0]['content'] = montar_system_prompt()
         # volta ao topo do for para o modelo ver o resultado da tool e responder de novo
 
