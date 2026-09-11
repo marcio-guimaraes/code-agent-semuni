@@ -72,6 +72,14 @@ def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
         return str(e)
 
 
+def deletar_arquivo(caminho: str) -> str:
+    try:
+        os.remove(resolver_caminho(caminho))
+        return "Arquivo excluido com sucesso."
+    except Exception as e:
+        return str(e)
+
+
 ferramentas = [
     {
         'type': 'function',
@@ -146,6 +154,20 @@ ferramentas = [
                 'required': ['caminho', 'conteudo']
             }
         }
+    },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'deletar_arquivo',
+            'description': 'Exclui um arquivo existente. Use somente quando o usuario pedir explicitamente para excluir ou apagar um arquivo.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo a ser excluido'}
+                },
+                'required': ['caminho']
+            }
+        }
     }
 ]
 
@@ -170,11 +192,22 @@ def gerar_arvore_projeto(diretorio_raiz: str) -> str:
         if rel != '.':
             linhas.append(f'{prefixo}{os.path.basename(raiz)}/')
         for arquivo in sorted(arquivos):
-            if rel == '.' and arquivo == ARQUIVO_ESTRUTURA:
-                continue  # não lista o próprio arquivo de estrutura
+            if rel == '.' and arquivo in (ARQUIVO_ESTRUTURA, ARQUIVO_CONTEXTO):
+                continue  # não lista arquivos gerados pelo agente
             prefixo_arquivo = '    ' * (nivel + (0 if rel == '.' else 1))
             linhas.append(f'{prefixo_arquivo}{arquivo}')
     return '\n'.join(linhas)
+
+
+def gerar_contexto(diretorio_raiz: str) -> str:
+    arvore = gerar_arvore_projeto(diretorio_raiz)
+    caminho_contexto = os.path.join(diretorio_raiz, ARQUIVO_CONTEXTO)
+    try:
+        with open(caminho_contexto, 'w', encoding='utf-8') as f:
+            f.write(arvore + '\n')
+    except Exception:
+        pass
+    return arvore
 
 
 def atualizar_estrutura_projeto() -> str:
@@ -193,6 +226,10 @@ def atualizar_estrutura_projeto() -> str:
     except Exception:
         pass  # se não conseguir salvar em disco, ainda usamos a árvore em memória
     return arvore
+
+
+def atualizar_contexto() -> None:
+    gerar_contexto(DIRETORIO_TRABALHO)
 
 
 def ler_contexto() -> str:
@@ -268,16 +305,29 @@ def executar_ferramenta(nome_funcao: str, args: dict) -> str:
     elif nome_funcao == 'escrever_arquivo':
         resultado = escrever_arquivo(args['caminho'], args['conteudo'])
         print(f"[{args['caminho']} foi atualizado pelo agente]")
-        atualizar_estrutura_projeto()  # pode ter criado um arquivo novo
+        if resultado == "Arquivo atualizado com sucesso.":
+            atualizar_estrutura_projeto()
+            atualizar_contexto()
         return resultado
     elif nome_funcao == 'substituir_no_arquivo':
         resultado = substituir_no_arquivo(args['caminho'], args['texto_antigo'], args['texto_novo'])
         print(f"[{args['caminho']} foi atualizado pelo agente]")
+        if resultado == "Substituição realizada com sucesso.":
+            atualizar_contexto()
         return resultado
     elif nome_funcao == 'inserir_no_arquivo':
         resultado = inserir_no_arquivo(args['caminho'], args['conteudo'])
         print(f"[{args['caminho']} foi atualizado pelo agente]")
-        atualizar_estrutura_projeto()  # pode ter criado um arquivo novo
+        if resultado == "Conteúdo inserido com sucesso ao final do arquivo.":
+            atualizar_estrutura_projeto()
+            atualizar_contexto()
+        return resultado
+    elif nome_funcao == 'deletar_arquivo':
+        resultado = deletar_arquivo(args['caminho'])
+        print(f"[{args['caminho']} foi excluido pelo agente]")
+        if resultado == "Arquivo excluido com sucesso.":
+            atualizar_estrutura_projeto()
+            atualizar_contexto()
         return resultado
     return "Ferramenta desconhecida."
 
