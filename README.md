@@ -19,7 +19,7 @@
 
 ### 🧠 Fase 2: Memória e Consciência de Contexto
 - [ ] **[#5] Task 2.1 - Gerador de Mapa (`contexto.txt`):** Função que varre os diretórios (ignorando `.git`, `__pycache__`, etc.) e gera uma árvore do projeto.
-- [ ] **[#6] Task 2.2 - Injeção de Contexto:** Ler `contexto.txt` no início da execução e injetar no `system prompt` para o LLM conhecer a arquitetura antes de agir.
+- [x] **[#6] Task 2.2 - Injeção de Contexto:** Ler `contexto.txt` no início da execução e injetar no `system prompt` para o LLM conhecer a arquitetura antes de agir.
 - [ ] **[#7] Task 2.3 - Atualização Automática do Contexto:** Regenerar `contexto.txt` automaticamente após qualquer operação de criação, escrita ou exclusão de arquivos.
 
 ### 🏗️ Fase 3: Refatoração e Arquitetura do Código

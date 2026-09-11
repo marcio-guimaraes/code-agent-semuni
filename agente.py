@@ -155,6 +155,7 @@ DIRETORIO_TRABALHO = os.path.dirname(os.path.abspath(__file__))
 
 IGNORAR_PASTAS = {'.git', '__pycache__', 'node_modules', 'venv', '.venv', '.idea', '.vscode'}
 ARQUIVO_ESTRUTURA = 'ESTRUTURA_PROJETO.md'
+ARQUIVO_CONTEXTO = 'contexto.txt'
 
 
 def gerar_arvore_projeto(diretorio_raiz: str) -> str:
@@ -194,8 +195,20 @@ def atualizar_estrutura_projeto() -> str:
     return arvore
 
 
+def ler_contexto() -> str:
+    try:
+        with open(resolver_caminho(ARQUIVO_CONTEXTO), 'r', encoding='utf-8') as f:
+            return f.read().strip()
+    except FileNotFoundError:
+        return ''
+
+
 def montar_system_prompt() -> str:
     arvore = atualizar_estrutura_projeto()
+    contexto = ler_contexto()
+    contexto_prompt = ' '
+    if contexto:
+        contexto_prompt = (f'\n\nContexto adicional do projeto (arquivo {ARQUIVO_CONTEXTO}):\n' f'{contexto}\n' )
     return (
         f'Voce e um assistente de IA com ferramentas locais de sistema de arquivos.\n'
         f'Diretorio raiz do projeto: {DIRETORIO_TRABALHO}\n'
@@ -222,6 +235,7 @@ def montar_system_prompt() -> str:
         f'4. Caminhos relativos devem ser resolvidos usando o diretorio raiz do projeto como base.\n'
         f'5. Quando precisar usar uma ferramenta, SEMPRE use o mecanismo nativo de tool calling. '
         f'Nunca escreva o JSON da chamada como texto normal na resposta.'
+        f'{contexto_prompt}'
     )
 
 
