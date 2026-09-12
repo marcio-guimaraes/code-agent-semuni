@@ -71,6 +71,16 @@ def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
     except Exception as e:
         return str(e)
 
+def deletar_arquivo(caminho: str) -> str:
+    try:
+        caminho_resolvido = resolver_caminho(caminho)
+        if not os.path.isfile(caminho_resolvido):
+            return(f"Erro: o arquivo '{caminho}' não existe.")
+        os.remove(caminho_resolvido)
+        return(f"Arquivo deletado com sucesso.")
+    except Exception as e:
+        return str(e)
+
 
 ferramentas = [
     {
