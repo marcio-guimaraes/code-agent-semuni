@@ -71,6 +71,16 @@ def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
     except Exception as e:
         return str(e)
 
+def deletar_arquivo(caminho: str) -> str:
+    try:
+        caminho_resolvido = resolver_caminho(caminho)
+        if not os.path.isfile(caminho_resolvido):
+            return(f"Erro: o arquivo '{caminho}' não existe.")
+        os.remove(caminho_resolvido)
+        return(f"Arquivo deletado com sucesso.")
+    except Exception as e:
+        return str(e)
+
 
 ferramentas = [
     {
@@ -146,7 +156,22 @@ ferramentas = [
                 'required': ['caminho', 'conteudo']
             }
         }
+    },
+    {
+        'type': 'function',
+        'function': {
+            'name': 'deletar_arquivo',
+            'description': 'Deleta um arquivo. Use quando o usuario pedir para apagar ou excluir um arquivo inteiro.',
+            'parameters': {
+                'type': 'object',
+                'properties': {
+                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'}
+                },
+                'required': ['caminho']
+            }
+        }
     }
+
 ]
 
 FERRAMENTAS_VALIDAS = {f['function']['name'] for f in ferramentas}
@@ -265,6 +290,11 @@ def executar_ferramenta(nome_funcao: str, args: dict) -> str:
         print(f"[{args['caminho']} foi atualizado pelo agente]")
         atualizar_estrutura_projeto()  # pode ter criado um arquivo novo
         return resultado
+    elif nome_funcao == 'deletar_arquivo':
+        resultado = deletar_arquivo(args['caminho'])
+        print(f"[{args['caminho']} foi deletado pelo agente]")
+        atualizar_estrutura_projeto() #arquivo foi excluido
+        return resultado
     return "Ferramenta desconhecida."
 
 
@@ -320,7 +350,7 @@ def processar_turno(mensagens: list, max_rodadas: int = 6) -> None:
                 'content': resultado,
                 'name': nome_ferramenta
             })
-            if nome_ferramenta in ('escrever_arquivo', 'inserir_no_arquivo') and mensagens and mensagens[0]['role'] == 'system':
+            if nome_ferramenta in ('escrever_arquivo', 'inserir_no_arquivo', 'deletar_arquivo') and mensagens and mensagens[0]['role'] == 'system':
                 mensagens[0]['content'] = montar_system_prompt()
         # volta ao topo do for para o modelo ver o resultado da tool e responder de novo
 
