@@ -79,17 +79,9 @@ def deletar_arquivo(caminho: str) -> str:
     try:
         caminho_resolvido = resolver_caminho(caminho)
         if not os.path.isfile(caminho_resolvido):
-            return(f"Erro: o arquivo '{caminho}' não existe.")
+            return f"Erro: o arquivo '{caminho}' não existe."
         os.remove(caminho_resolvido)
-        return(f"Arquivo deletado com sucesso.")
-    except Exception as e:
-        return str(e)
-
-
-def deletar_arquivo(caminho: str) -> str:
-    try:
-        os.remove(resolver_caminho(caminho))
-        return "Arquivo excluido com sucesso."
+        return f"Arquivo '{caminho}' deletado com sucesso."
     except Exception as e:
         return str(e)
 
