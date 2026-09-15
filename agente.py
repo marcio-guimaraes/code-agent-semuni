@@ -28,7 +28,11 @@ def ler_arquivo(caminho: str) -> str:
 
 def escrever_arquivo(caminho: str, conteudo: str) -> str:
     try:
-        with open(resolver_caminho(caminho), "w", encoding="utf-8") as f:
+        caminho_resolvido = resolver_caminho(caminho) # resolve o caminho
+        diretorio_pai = os.path.dirname(caminho_resolvido) # extrai o caminho do diretorio pai
+        os.makedirs(diretorio_pai, exist_ok=True) # se a pasta não existir, cria as pastas, incluindo as intermediárias
+
+        with open(caminho_resolvido, "w", encoding="utf-8") as f:
             f.write(conteudo)
         return "Arquivo atualizado com sucesso."
     except Exception as e:
@@ -115,7 +119,7 @@ ferramentas = [
         'type': 'function',
         'function': {
             'name': 'escrever_arquivo',
-            'description': 'Sobrescreve um arquivo com novo conteudo completo. Use quando o usuario pedir para criar ou reescrever um arquivo inteiro.',
+            'description': 'Cria ou sobrescreve um arquivo com novo conteudo completo, criando diretorios pai automaticamente quando necessario.',
             'parameters': {
                 'type': 'object',
                 'properties': {
