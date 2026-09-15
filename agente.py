@@ -28,7 +28,11 @@ def ler_arquivo(caminho: str) -> str:
 
 def escrever_arquivo(caminho: str, conteudo: str) -> str:
     try:
-        with open(resolver_caminho(caminho), "w", encoding="utf-8") as f:
+        caminho_resolvido = resolver_caminho(caminho) # resolve o caminho
+        diretorio_pai = os.path.dirname(caminho_resolvido) # extrai o caminho do diretorio pai
+        os.makedirs(diretorio_pai, exist_ok=True) # se a pasta não existir, cria as pastas, incluindo as intermediárias
+
+        with open(caminho_resolvido, "w", encoding="utf-8") as f:
             f.write(conteudo)
         return "Arquivo atualizado com sucesso."
     except Exception as e:
@@ -68,6 +72,16 @@ def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
         with open(caminho_resolvido, "a", encoding="utf-8") as f:
             f.write(conteudo)
         return "Conteúdo inserido com sucesso ao final do arquivo."
+    except Exception as e:
+        return str(e)
+
+def deletar_arquivo(caminho: str) -> str:
+    try:
+        caminho_resolvido = resolver_caminho(caminho)
+        if not os.path.isfile(caminho_resolvido):
+            return(f"Erro: o arquivo '{caminho}' não existe.")
+        os.remove(caminho_resolvido)
+        return(f"Arquivo deletado com sucesso.")
     except Exception as e:
         return str(e)
 
@@ -113,7 +127,7 @@ ferramentas = [
         'type': 'function',
         'function': {
             'name': 'escrever_arquivo',
-            'description': 'Sobrescreve um arquivo com novo conteudo completo. Use quando o usuario pedir para criar ou reescrever um arquivo inteiro.',
+            'description': 'Cria ou sobrescreve um arquivo com novo conteudo completo, criando diretorios pai automaticamente quando necessario.',
             'parameters': {
                 'type': 'object',
                 'properties': {
@@ -169,6 +183,7 @@ ferramentas = [
             }
         }
     }
+
 ]
 
 FERRAMENTAS_VALIDAS = {f['function']['name'] for f in ferramentas}
@@ -329,6 +344,11 @@ def executar_ferramenta(nome_funcao: str, args: dict) -> str:
             atualizar_estrutura_projeto()
             atualizar_contexto()
         return resultado
+    elif nome_funcao == 'deletar_arquivo':
+        resultado = deletar_arquivo(args['caminho'])
+        print(f"[{args['caminho']} foi deletado pelo agente]")
+        atualizar_estrutura_projeto() #arquivo foi excluido
+        return resultado
     return "Ferramenta desconhecida."
 
 
@@ -384,7 +404,7 @@ def processar_turno(mensagens: list, max_rodadas: int = 6) -> None:
                 'content': resultado,
                 'name': nome_ferramenta
             })
-            if nome_ferramenta in ('escrever_arquivo', 'inserir_no_arquivo') and mensagens and mensagens[0]['role'] == 'system':
+            if nome_ferramenta in ('escrever_arquivo', 'inserir_no_arquivo', 'deletar_arquivo') and mensagens and mensagens[0]['role'] == 'system':
                 mensagens[0]['content'] = montar_system_prompt()
         # volta ao topo do for para o modelo ver o resultado da tool e responder de novo
 
