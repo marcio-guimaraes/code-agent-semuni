@@ -24,7 +24,7 @@
 
 ### 🏗️ Fase 3: Refatoração e Arquitetura do Código
 - [ ] **[#8]** Mover funcoes de ferramentas e definicoes JSON para tools.py
-- [ ] **[#9]** Centralizar configuracoes em config.py
+- [x] **[#9]** Centralizar configuracoes em config.py
 - [ ] **[#10]** Limpar agente.py para conter apenas o loop de conversa
 - [ ] **[#11]** Padronizar retorno de erros para o LLM interpretar
 

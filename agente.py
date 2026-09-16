@@ -6,7 +6,9 @@ import ollama
 
 sys.stdout.reconfigure(encoding='utf-8')
 
-MODEL = 'llama3.1:8b'
+import config
+
+MODEL = config.MODEL
 
 def resolver_caminho(caminho: str) -> str:
     if os.path.isabs(caminho):
@@ -180,11 +182,10 @@ ferramentas = [
 
 FERRAMENTAS_VALIDAS = {f['function']['name'] for f in ferramentas}
 
-DIRETORIO_TRABALHO = os.path.dirname(os.path.abspath(__file__))
-
-IGNORAR_PASTAS = {'.git', '__pycache__', 'node_modules', 'venv', '.venv', '.idea', '.vscode'}
-ARQUIVO_ESTRUTURA = 'ESTRUTURA_PROJETO.md'
-ARQUIVO_CONTEXTO = 'contexto.txt'
+DIRETORIO_TRABALHO = config.DIRETORIO_TRABALHO
+IGNORAR_PASTAS = config.IGNORAR_PASTAS
+ARQUIVO_ESTRUTURA = config.ARQUIVO_ESTRUTURA
+ARQUIVO_CONTEXTO = config.ARQUIVO_CONTEXTO
 
 
 def gerar_arvore_projeto(diretorio_raiz: str) -> str:
