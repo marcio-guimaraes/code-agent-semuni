@@ -11,14 +11,14 @@ def listar_arquivos(diretorio: str) -> str:
     try:
         return "\n".join(os.listdir(resolver_caminho(diretorio)))
     except Exception as e:
-        return str(e)
+        return f"ERRO: Não foi possível listar arquivos no diretório '{diretorio}'. Detalhes: {str(e)}"
 
 def ler_arquivo(caminho: str) -> str:
     try:
         with open(resolver_caminho(caminho), "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
-        return str(e)
+        return f"ERRO: Não foi possível ler o arquivo '{caminho}'. Detalhes: {str(e)}"
 
 def escrever_arquivo(caminho: str, conteudo: str) -> str:
     try:
@@ -30,7 +30,7 @@ def escrever_arquivo(caminho: str, conteudo: str) -> str:
             f.write(conteudo)
         return "Arquivo atualizado com sucesso."
     except Exception as e:
-        return str(e)
+        return f"ERRO: Falha ao escrever no arquivo '{caminho}'. Detalhes: {str(e)}"
 
 def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> str:
     try:
@@ -41,11 +41,11 @@ def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> s
         ocorrencias = conteudo.count(texto_antigo)
 
         if ocorrencias == 0:
-            return f"Erro: o texto '{texto_antigo}' não foi encontrado no arquivo '{caminho}'."
+            return f"ERRO: O texto solicitado não foi encontrado no arquivo '{caminho}'."
 
         if ocorrencias > 1:
             return (
-                f"Erro: o texto '{texto_antigo}' aparece {ocorrencias} vezes no arquivo '{caminho}'. "
+                f"ERRO: O texto fornecido aparece {ocorrencias} vezes no arquivo '{caminho}'. "
                 f"Forneça um trecho mais especifico (com mais contexto ao redor) para identificar "
                 f"exatamente qual ocorrencia deve ser substituida."
             )
@@ -57,7 +57,7 @@ def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> s
 
         return "Substituição realizada com sucesso."
     except Exception as e:
-        return str(e)
+        return f"ERRO: Falha ao substituir texto no arquivo '{caminho}'. Detalhes: {str(e)}"
 
 
 def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
@@ -67,18 +67,18 @@ def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
             f.write(conteudo)
         return "Conteúdo inserido com sucesso ao final do arquivo."
     except Exception as e:
-        return str(e)
+        return f"ERRO: Falha ao inserir conteúdo no arquivo '{caminho}'. Detalhes: {str(e)}"
 
 
 def deletar_arquivo(caminho: str) -> str:
     try:
         caminho_resolvido = resolver_caminho(caminho)
         if not os.path.isfile(caminho_resolvido):
-            return f"Erro: o arquivo '{caminho}' não existe."
+            return f"ERRO: O arquivo '{caminho}' não existe."
         os.remove(caminho_resolvido)
         return f"Arquivo '{caminho}' deletado com sucesso."
     except Exception as e:
-        return str(e)
+        return f"ERRO: Falha ao deletar o arquivo '{caminho}'. Detalhes: {str(e)}"
 
 
 ferramentas = [
@@ -267,5 +267,4 @@ def executar_ferramenta(nome_funcao: str, args: dict) -> str:
             atualizar_estrutura_projeto()
             atualizar_contexto()
         return resultado
-    return "Ferramenta desconhecida."
-
+    return "ERRO: Ferramenta desconhecida."

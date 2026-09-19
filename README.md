@@ -27,6 +27,7 @@
 - [x] **[#9]** Centralizar configuracoes em config.py
 - [x] **[#10]** Limpar agente.py para conter apenas o loop de conversa
 - [ ] **[#11]** Padronizar retorno de erros para o LLM interpretar
+- [x] **[#11]** Padronizar retorno de erros para o LLM interpretar
 
 ### Fase 4: Segurança e UX — EXTRA
 - [ ] **[#12]** [DESAFIO] Implementar human-in-the-loop para acoes destrutivas
