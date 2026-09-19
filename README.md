@@ -23,9 +23,9 @@
 - [x] **[#7]** Regenerar contexto.txt apos operacoes de escrita/criacao/exclusao
 
 ### 🏗️ Fase 3: Refatoração e Arquitetura do Código
-- [ ] **[#8]** Mover funcoes de ferramentas e definicoes JSON para tools.py
+- [x] **[#8]** Mover funcoes de ferramentas e definicoes JSON para tools.py
 - [x] **[#9]** Centralizar configuracoes em config.py
-- [ ] **[#10]** Limpar agente.py para conter apenas o loop de conversa
+- [x] **[#10]** Limpar agente.py para conter apenas o loop de conversa
 - [ ] **[#11]** Padronizar retorno de erros para o LLM interpretar
 
 ### Fase 4: Segurança e UX — EXTRA
