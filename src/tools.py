@@ -1,11 +1,13 @@
-import os
+﻿import os
 import json
 import config
+
 
 def resolver_caminho(caminho: str) -> str:
     if os.path.isabs(caminho):
         return caminho
     return os.path.join(config.DIRETORIO_TRABALHO, caminho)
+
 
 def listar_arquivos(diretorio: str) -> str:
     try:
@@ -13,12 +15,14 @@ def listar_arquivos(diretorio: str) -> str:
     except Exception as e:
         return f"ERRO: Não foi possível listar arquivos no diretório '{diretorio}'. Detalhes: {str(e)}"
 
+
 def ler_arquivo(caminho: str) -> str:
     try:
         with open(resolver_caminho(caminho), "r", encoding="utf-8") as f:
             return f.read()
     except Exception as e:
         return f"ERRO: Não foi possível ler o arquivo '{caminho}'. Detalhes: {str(e)}"
+
 
 def escrever_arquivo(caminho: str, conteudo: str) -> str:
     try:
@@ -31,6 +35,7 @@ def escrever_arquivo(caminho: str, conteudo: str) -> str:
         return "Arquivo atualizado com sucesso."
     except Exception as e:
         return f"ERRO: Falha ao escrever no arquivo '{caminho}'. Detalhes: {str(e)}"
+
 
 def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> str:
     try:
@@ -63,6 +68,14 @@ def substituir_no_arquivo(caminho: str, texto_antigo: str, texto_novo: str) -> s
 def inserir_no_arquivo(caminho: str, conteudo: str) -> str:
     try:
         caminho_resolvido = resolver_caminho(caminho)
+        # Guard Bug #5: inserir_no_arquivo pressupõe arquivo EXISTENTE.
+        # Se o arquivo não existe, retorna erro — use escrever_arquivo para criar arquivos novos.
+        # Guard: inserir_no_arquivo pressupõe arquivo EXISTENTE.
+        if not os.path.isfile(caminho_resolvido):
+            return (
+                f"ERRO: O arquivo '{caminho}' nao existe no projeto. "
+                f"Use a ferramenta escrever_arquivo para criar arquivos novos."
+            )
         with open(caminho_resolvido, "a", encoding="utf-8") as f:
             f.write(conteudo)
         return "Conteúdo inserido com sucesso ao final do arquivo."
@@ -90,7 +103,8 @@ ferramentas = [
             'parameters': {
                 'type': 'object',
                 'properties': {
-                    'diretorio': {'type': 'string', 'description': 'Caminho absoluto de um DIRETORIO (pasta), nunca de um arquivo, a ser listado'}
+
+                    'diretorio': {'type': 'string', 'description': 'Caminho absoluto de um DIRETORIO (pasta) a ser listado'}
                 },
                 'required': ['diretorio']
             }
@@ -115,9 +129,17 @@ ferramentas = [
         'function': {
             'name': 'escrever_arquivo',
             'description': 'Cria ou sobrescreve um arquivo com novo conteudo completo, criando diretorios pai automaticamente quando necessario.',
+            'description': (
+                'Cria um arquivo NOVO ou sobrescreve completamente um arquivo existente. '
+                'Use para: (1) criar arquivos que ainda nao existem no projeto, ou '
+                '(2) reescrever um arquivo inteiro do zero. '
+                'NAO use para modificar trechos pontuais de um arquivo existente — '
+                'para isso use substituir_no_arquivo.'
+            ),
             'parameters': {
                 'type': 'object',
                 'properties': {
+
                     'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
                     'conteudo': {'type': 'string', 'description': 'Conteudo completo a ser escrito no arquivo'}
                 },
@@ -130,12 +152,23 @@ ferramentas = [
         'function': {
             'name': 'substituir_no_arquivo',
             'description': 'Substitui um trecho de texto por outro dentro de um arquivo existente. Use para edicoes pontuais, sem reescrever o arquivo inteiro. O texto_antigo deve ser especifico o suficiente para aparecer apenas UMA VEZ no arquivo (inclua linhas de contexto ao redor se necessario) — se aparecer mais de uma vez, a ferramenta recusa a operacao.',
+            'description': (
+                'Modifica um trecho EXISTENTE dentro de um arquivo, trocando texto_antigo por texto_novo. '
+                'Use SEMPRE que o usuario pedir para alterar, corrigir ou renomear algo que JA EXISTE no arquivo. '
+                'REGRA CRITICA: texto_antigo deve ser a LINHA INTEIRA (ou multiplas linhas com contexto), '
+                'NUNCA uma palavra isolada — palavras sozinhas como "def" ou "return" aparecem varias vezes '
+                'e a ferramenta recusara a operacao. '
+                'Se texto_antigo aparecer mais de uma vez no arquivo, a ferramenta recusa e pede mais contexto.'
+            ),
             'parameters': {
                 'type': 'object',
                 'properties': {
+
+
+
                     'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
-                    'texto_antigo': {'type': 'string', 'description': 'Trecho exato de texto a ser substituido'},
-                    'texto_novo': {'type': 'string', 'description': 'Novo trecho de texto'}
+                    'texto_antigo': {'type': 'string', 'description': 'Trecho exato e unico a ser substituido (use a linha inteira, nunca uma palavra solta)'},
+                    'texto_novo': {'type': 'string', 'description': 'Novo trecho de texto que substituira o antigo'}
                 },
                 'required': ['caminho', 'texto_antigo', 'texto_novo']
             }
@@ -146,11 +179,21 @@ ferramentas = [
         'function': {
             'name': 'inserir_no_arquivo',
             'description': 'Adiciona conteudo novo ao FINAL de um arquivo existente, sem apagar o conteudo atual. Use quando o usuario pedir para adicionar codigo novo (ex: uma funcao nova) a um arquivo, em vez de substituir algo que ja existe.',
+            'description': (
+                'Adiciona conteudo NOVO ao FINAL de um arquivo que JA EXISTE. '
+                'Use apenas para acrescentar funcoes, classes ou blocos novos ao final de um arquivo. '
+                'NUNCA use para modificar, corrigir ou substituir codigo que ja existe — '
+                'para isso use substituir_no_arquivo. '
+                'NUNCA use para criar arquivos novos — para isso use escrever_arquivo. '
+                'Se o arquivo nao existir, esta ferramenta retorna ERRO.'
+            ),
             'parameters': {
                 'type': 'object',
                 'properties': {
-                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
-                    'conteudo': {'type': 'string', 'description': 'Conteudo a ser adicionado ao final do arquivo'}
+
+
+                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo existente'},
+                    'conteudo': {'type': 'string', 'description': 'Conteudo novo a ser adicionado ao final do arquivo'}
                 },
                 'required': ['caminho', 'conteudo']
             }
@@ -220,6 +263,7 @@ def atualizar_estrutura_projeto() -> str:
             f.write(conteudo)
     except Exception:
         pass  # se não conseguir salvar em disco, ainda usamos a árvore em memória
+        pass
     return arvore
 
 
@@ -268,3 +312,4 @@ def executar_ferramenta(nome_funcao: str, args: dict) -> str:
             atualizar_contexto()
         return resultado
     return "ERRO: Ferramenta desconhecida."
+    return f"Erro: Ferramenta '{nome_funcao}' desconhecida."
