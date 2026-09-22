@@ -81,96 +81,8 @@ def deletar_arquivo(caminho: str) -> str:
         return f"ERRO: Falha ao deletar o arquivo '{caminho}'. Detalhes: {str(e)}"
 
 
-ferramentas = [
-    {
-        'type': 'function',
-        'function': {
-            'name': 'listar_arquivos',
-            'description': 'Lista os arquivos e pastas em um DIRETORIO (nunca um arquivo). Use quando o usuario pedir para ver, listar ou conhecer os arquivos de uma pasta.',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'diretorio': {'type': 'string', 'description': 'Caminho absoluto de um DIRETORIO (pasta), nunca de um arquivo, a ser listado'}
-                },
-                'required': ['diretorio']
-            }
-        }
-    },
-    {
-        'type': 'function',
-        'function': {
-            'name': 'ler_arquivo',
-            'description': 'Le e retorna o conteudo de um ARQUIVO especifico (nunca uma pasta). Use SEMPRE que o usuario pedir para ler, ver, abrir ou mostrar um arquivo. Nunca recuse esta acao.',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do ARQUIVO a ser lido'}
-                },
-                'required': ['caminho']
-            }
-        }
-    },
-    {
-        'type': 'function',
-        'function': {
-            'name': 'escrever_arquivo',
-            'description': 'Cria ou sobrescreve um arquivo com novo conteudo completo, criando diretorios pai automaticamente quando necessario.',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
-                    'conteudo': {'type': 'string', 'description': 'Conteudo completo a ser escrito no arquivo'}
-                },
-                'required': ['caminho', 'conteudo']
-            }
-        }
-    },
-    {
-        'type': 'function',
-        'function': {
-            'name': 'substituir_no_arquivo',
-            'description': 'Substitui um trecho de texto por outro dentro de um arquivo existente. Use para edicoes pontuais, sem reescrever o arquivo inteiro. O texto_antigo deve ser especifico o suficiente para aparecer apenas UMA VEZ no arquivo (inclua linhas de contexto ao redor se necessario) — se aparecer mais de uma vez, a ferramenta recusa a operacao.',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
-                    'texto_antigo': {'type': 'string', 'description': 'Trecho exato de texto a ser substituido'},
-                    'texto_novo': {'type': 'string', 'description': 'Novo trecho de texto'}
-                },
-                'required': ['caminho', 'texto_antigo', 'texto_novo']
-            }
-        }
-    },
-    {
-        'type': 'function',
-        'function': {
-            'name': 'inserir_no_arquivo',
-            'description': 'Adiciona conteudo novo ao FINAL de um arquivo existente, sem apagar o conteudo atual. Use quando o usuario pedir para adicionar codigo novo (ex: uma funcao nova) a um arquivo, em vez de substituir algo que ja existe.',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo'},
-                    'conteudo': {'type': 'string', 'description': 'Conteudo a ser adicionado ao final do arquivo'}
-                },
-                'required': ['caminho', 'conteudo']
-            }
-        }
-    },
-    {
-        'type': 'function',
-        'function': {
-            'name': 'deletar_arquivo',
-            'description': 'Exclui um arquivo existente. Use somente quando o usuario pedir explicitamente para excluir ou apagar um arquivo.',
-            'parameters': {
-                'type': 'object',
-                'properties': {
-                    'caminho': {'type': 'string', 'description': 'Caminho absoluto do arquivo a ser excluido'}
-                },
-                'required': ['caminho']
-            }
-        }
-    }
-]
+# descrever aqui as ferramentas que o modelo pode chamar.
+ferramentas = []
 
 FERRAMENTAS_VALIDAS = {f['function']['name'] for f in ferramentas}
 
@@ -195,14 +107,8 @@ def gerar_arvore_projeto(diretorio_raiz: str) -> str:
 
 
 def gerar_contexto(diretorio_raiz: str) -> str:
-    arvore = gerar_arvore_projeto(diretorio_raiz)
-    caminho_contexto = os.path.join(diretorio_raiz, config.ARQUIVO_CONTEXTO)
-    try:
-        with open(caminho_contexto, 'w', encoding='utf-8') as f:
-            f.write(arvore + '\n')
-    except Exception:
-        pass
-    return arvore
+    # gerar e salvar o contexto do projeto.
+    raise NotImplementedError
 
 
 def atualizar_estrutura_projeto() -> str:
@@ -236,35 +142,5 @@ def ler_contexto() -> str:
 
 
 def executar_ferramenta(nome_funcao: str, args: dict) -> str:
-    if nome_funcao == 'listar_arquivos':
-        return listar_arquivos(args['diretorio'])
-    elif nome_funcao == 'ler_arquivo':
-        return ler_arquivo(args['caminho'])
-    elif nome_funcao == 'escrever_arquivo':
-        resultado = escrever_arquivo(args['caminho'], args['conteudo'])
-        print(f"[{args['caminho']} foi atualizado pelo agente]")
-        if resultado == "Arquivo atualizado com sucesso.":
-            atualizar_estrutura_projeto()
-            atualizar_contexto()
-        return resultado
-    elif nome_funcao == 'substituir_no_arquivo':
-        resultado = substituir_no_arquivo(args['caminho'], args['texto_antigo'], args['texto_novo'])
-        print(f"[{args['caminho']} foi atualizado pelo agente]")
-        if resultado == "Substituição realizada com sucesso.":
-            atualizar_contexto()
-        return resultado
-    elif nome_funcao == 'inserir_no_arquivo':
-        resultado = inserir_no_arquivo(args['caminho'], args['conteudo'])
-        print(f"[{args['caminho']} foi atualizado pelo agente]")
-        if resultado == "Conteúdo inserido com sucesso ao final do arquivo.":
-            atualizar_estrutura_projeto()
-            atualizar_contexto()
-        return resultado
-    elif nome_funcao == 'deletar_arquivo':
-        resultado = deletar_arquivo(args['caminho'])
-        print(f"[{args['caminho']} foi excluido pelo agente]")
-        if "sucesso" in resultado:
-            atualizar_estrutura_projeto()
-            atualizar_contexto()
-        return resultado
-    return "ERRO: Ferramenta desconhecida."
+    # TODO: encaminhar o nome da ferramenta para a função correspondente.
+    raise NotImplementedError
