@@ -142,5 +142,5 @@ def ler_contexto() -> str:
 
 
 def executar_ferramenta(nome_funcao: str, args: dict) -> str:
-    # TODO: encaminhar o nome da ferramenta para a função correspondente.
+    # encaminhar o nome da ferramenta para a função correspondente.
     raise NotImplementedError
