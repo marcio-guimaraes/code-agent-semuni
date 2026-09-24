@@ -16,6 +16,12 @@ implementação das fases, está disponível em:
 
 - [Tutorial em PDF](https://drive.google.com/file/d/1kobYpYrliUvK63x8ufZsajVcxQuPbYY3/view?usp=sharing)
 
+## Slides
+
+Os slides utilizados na apresentação dos conceitos teóricos da oficina estão disponíveis em:
+
+- [Slides](https://canva.link/7i95sg7limfkowc)
+
 ## O que o projeto demonstra
 
 Ao final, o agente consegue:
@@ -38,11 +44,10 @@ O fluxo central é:
 
 ## Organização do projeto
 
-- app.py: ponto de entrada da aplicação.
+- app.py: arquivo para testar funcionalidades do agente.
 - src/agente.py: coordena conversa, histórico e chamadas ao modelo.
 - src/tools.py: implementa ferramentas e descrições para Function Calling.
 - src/config.py: centraliza modelo, diretório de trabalho e configurações.
-- contexto.txt: mapa gerado da estrutura do projeto, utilizado como contexto.
 
 ## Fases da oficina
 
@@ -50,12 +55,12 @@ O repositório possui branches que representam os momentos da implementação.
 
 ### Fase 1 — Ferramentas
 
-Na branch Fase1-apresentacao, são trabalhados o fluxo básico do agente, o
-conceito de prompt e a integração com ferramentas de leitura e escrita.
+Na branch Fase1-apresentacao, são trabalhados o fluxo básico do agente e o
+conceito de system prompt.
 
 ### Fase 2 — Contexto e Function Calling
 
-Na branch Fase2-apresetancao (o nome contém intencionalmente essa grafia), a
+Na branch Fase2-apresetancao, a
 implementação avança para descrições estruturadas de ferramentas, despacho das
 funções, autorização e geração/injeção de contexto.
 
@@ -104,39 +109,10 @@ desempenho em tarefas complexas.
 
 Para executar:
 
-    python app.py
+    python src/agente.py
 
-Consulte o tutorial para ver os comandos completos de instalação no Windows e
+Consulte o tutorial em PDF para ver os comandos completos de instalação no Windows e
 no Linux.
-
-## Roadmap
-
-### Fase 1 — Ferramentas de sistema de arquivos
-
-- [x] Interação básica com o sistema: conversar, ler e escrever arquivos.
-- [x] Substituir conteúdo em arquivo.
-- [x] Inserir conteúdo em arquivo.
-- [x] Criar diretórios automaticamente ao escrever.
-- [x] Excluir arquivos.
-
-### Fase 2 — Memória e contexto
-
-- [x] Gerar contexto.txt com o mapa do projeto.
-- [x] Injetar o contexto no system prompt.
-- [x] Regenerar o contexto após operações de escrita, criação ou exclusão.
-
-### Fase 3 — Organização do código
-
-- [x] Centralizar ferramentas em src/tools.py.
-- [x] Centralizar configurações em src/config.py.
-- [x] Separar o loop de conversa em src/agente.py.
-- [x] Padronizar retornos de erro para o modelo.
-
-### Fase 4 — Desafios extras
-
-- [ ] Implementar autorização específica para ações destrutivas.
-- [ ] Validar path traversal e reforçar o sandboxing.
-- [ ] Criar um sistema de logging em agent.log.
 
 ## Modelo utilizado
 
